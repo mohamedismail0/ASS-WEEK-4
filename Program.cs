@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 namespace ASS_WEEK_4
 {
 
@@ -28,78 +30,69 @@ namespace ASS_WEEK_4
             if (amount <= 0 || amount > Balance) return false;
             Balance -= amount;
             return true;
- 
+
         }
     }
     class SavingsAcc : Account
     {
         public SavingsAcc(string name = "Unnamed Account", double balance = 0, double intersetRate = 0) : base(name, balance)
         {
-            IntersetRate = intersetRate;
+            InterestRate = intersetRate;
         }
-        public double  IntersetRate { get; set; }
+        public double InterestRate { get; set; }
 
-        public override bool Deposit(double amount )
+        public override bool Deposit(double amount)
         {
-            if (amount < 0)
-                return false;
-          
-            return base.Deposit(amount);
+            if (amount < 0) return false;
+            double total = amount + amount * InterestRate/100;
+
+            return base.Deposit(total);
         }
-
-        public override bool Withdraw(double amount)
-        {
-            if ((amount + amount * IntersetRate/100) > Balance ) return false;
-
-            return base.Withdraw(amount);
-        }
-
     }
 
     class CheckingAcc : Account
     {
-        public CheckingAcc(string name = "Unnamed Account", double balance = 0 , double WithdrawFee =1.5) : base(name, balance)
+        public CheckingAcc(string name = "Unnamed Account", double balance = 0) : base(name, balance)
         {
         }
-         private const double WithdrawFee = 1.5;
+        private const double WithdrawFee = 1.5;
 
 
         public override bool Withdraw(double amount)
         {
-            if (amount+WithdrawFee < Balance) return false;            
-        
-            amount -= amount+ WithdrawFee;
-            return base.Withdraw(amount);
+            double total = amount + WithdrawFee;
+            if (total > Balance) return false;
+
+            return base.Withdraw(total);
         }
     }
 
     class TrustAcc : Account
     {
-        public TrustAcc(string name = "Unnamed Account", double balance = 0, double intersetRate = 0) : base(name, balance)
+        public TrustAcc(string name = "Unnamed Account", double balance = 0, double interestRate = 0) : base(name, balance)
         {
-            IntersetRate = intersetRate;
+            InterestRate = interestRate;
         }
-        double IntersetRate { get; set; }
+        public double InterestRate { get; set; }
 
         int WithdrawCounts = 0;
         private const double MaxWithdrawPercent = 0.2;
         private const double DepositBonus = 50.0;
         private const int MinimumAmount4Bonus = 5000;
+        private const int MAxWIthdrawTranaction = 3;
 
 
         public override bool Deposit(double amount)
         {
-            if (amount  < 0) return false;
-            amount += amount * (IntersetRate / 100);
-            if (amount >= MinimumAmount4Bonus) Balance += DepositBonus;
-            return base.Deposit(amount);
+            if (amount < 0) return false;
+            double total = amount;
+            if (total >= MinimumAmount4Bonus) total += DepositBonus;
+            return base.Deposit(total);
         }
 
         public override bool Withdraw(double amount)
         {
-            if (amount > Balance * MaxWithdrawPercent || WithdrawCounts >= 3) return false;
-            //if (amount > amount* MaxWithdrawPercent) return false;
-            //if (WithdrawCounts > 3) return false;
+            if (amount > Balance * MaxWithdrawPercent || WithdrawCounts >= MAxWIthdrawTranaction) return false;
             if (base.Withdraw(amount))
             {
                 WithdrawCounts++;
@@ -107,109 +100,64 @@ namespace ASS_WEEK_4
             }
             return false;
         }
-
     }
 
-        internal class Program
+    internal class Program
     {
         static void Main(string[] args)
         {
 
-            var s1 = new SavingsAcc("Ali", 1000, 5.0);
-            var s2 = new SavingsAcc("Nada", 3000, 5.0);
+            Account s1 = new SavingsAcc("Ali", 1000, 5.0);
+            Account s2 = new SavingsAcc("Nada", 3000, 5.0);
 
-            var c1 = new CheckingAcc("Mona", 2000);
-            var c2 = new CheckingAcc("Osama", 1500);
+            Account c1 = new CheckingAcc("Mona", 2000);
+            Account c2 = new CheckingAcc("Osama", 1500);
 
-            var t1 = new TrustAcc("Ahmed", 10000, 4.0);
-            var t2 = new TrustAcc("Mohamed", 25000, 4.0);
+            Account t1 = new TrustAcc("Ahmed", 10000, 4.0);
+            Account t2 = new TrustAcc("Mohamed", 25000, 4.0);
 
-            List<Account> accounts = new List<Account>() {s1,s2,c1,c2,t1,t2};
+            List<Account> accounts = new List<Account>() { s1, s2, c1, c2, t1, t2 };
 
-            List<SavingsAcc> savingList = new List<SavingsAcc>() { s1 ,s2 };
+            AccountUtil.Deposit(accounts, 5000);
+            AccountUtil.Withdraw(accounts, 1000);
+            AccountUtil.PrintDetails(accounts);
+        }
+    }
 
-            List<TrustAcc> trustList = new List<TrustAcc>() { t1,t2 };
-
-            List<CheckingAcc> checkingList = new List<CheckingAcc>() { c1,c2 };
-
-
-
-
-
-            Console.WriteLine("\n--- Deposit 6000 to all accounts ---");
+    public static class AccountUtil
+    {
+        // Utility helper functions for Account class
+        public static void Deposit(List<Account> accounts, double amount)
+        {
+            Console.WriteLine("\n=== Depositing to Accounts =================================");
             foreach (var acc in accounts)
             {
-                Console.WriteLine($"\nBefore deposit: {acc.Name} has balance {acc.Balance}");
-                acc.Deposit(6000);
-                Console.WriteLine($"After deposit: {acc.Name} has balance {acc.Balance}");
+                if (acc.Deposit(amount))
+                    Console.WriteLine($"Deposited {amount} to {acc.Name}");
+                else
+                    Console.WriteLine($"Failed Deposit of {amount} to {acc.Name}");
             }
-
-            Console.WriteLine("\n--- Withdraw 500 from all accounts ---");
-            foreach (var acc in accounts)
-            {
-                Console.WriteLine($"\nBefore withdraw: {acc.Name} has balance {acc.Balance}");
-                acc.Withdraw(500);
-                Console.WriteLine($"After withdraw: {acc.Name} has balance {acc.Balance}");
-            }
-
-            //=================================================================================
-
-            Console.WriteLine("\n--- Deposit 6000 to all saving accounts ---");
-            foreach (var acc in savingList)
-            {
-                Console.WriteLine($"\nBefore deposit: {acc.Name} has balance {acc.Balance}");
-                acc.Deposit(6000);
-                Console.WriteLine($"After deposit: {acc.Name} has balance {acc.Balance}");
-            }
-
-            //=================================================================================
-
-            Console.WriteLine("\n--- Withdraw 500 from all saving accounts ---");
-            foreach (var acc in savingList)
-            {
-                Console.WriteLine($"\nBefore withdraw: {acc.Name} has balance {acc.Balance}");
-                acc.Withdraw(500);
-                Console.WriteLine($"After withdraw: {acc.Name} has balance {acc.Balance}");
-            }
-
-            //=================================================================================
-
-            Console.WriteLine("\n--- Deposit 6000 to all trust accounts ---");
-            foreach (var acc in trustList)
-            {
-                Console.WriteLine($"\nBefore deposit: {acc.Name} has balance {acc.Balance}");
-                acc.Deposit(6000);
-                Console.WriteLine($"After deposit: {acc.Name} has balance {acc.Balance}");
-            }
-
-            Console.WriteLine("\n--- Withdraw 500 from all trust accounts ---");
-            foreach (var acc in trustList)
-            {
-                Console.WriteLine($"\nBefore withdraw: {acc.Name} has balance {acc.Balance}");
-                acc.Withdraw(500);
-                Console.WriteLine($"After withdraw: {acc.Name} has balance {acc.Balance}");
-            }
-
-            //=================================================================================
-
-            Console.WriteLine("\n--- Deposit 6000 to all checking accounts ---");
-            foreach (var acc in checkingList)
-            {
-                Console.WriteLine($"\nBefore deposit: {acc.Name} has balance {acc.Balance}");
-                acc.Deposit(6000);
-                Console.WriteLine($"After deposit: {acc.Name} has balance {acc.Balance}");
-            }
-
-            Console.WriteLine("\n--- Withdraw 500 from all checking accounts ---");
-            foreach (var acc in checkingList)
-            {
-                Console.WriteLine($"\nBefore withdraw: {acc.Name} has balance {acc.Balance}");
-                acc.Withdraw(500);
-                Console.WriteLine($"After withdraw: {acc.Name} has balance {acc.Balance}");
-            }
-
-            Console.WriteLine("\nDone.");
         }
 
+        public static void Withdraw(List<Account> accounts, double amount)
+        {
+            Console.WriteLine("\n=== Withdrawing from Accounts ==============================");
+            foreach (var acc in accounts)
+            {
+                if (acc.Withdraw(amount))
+                    Console.WriteLine($"Withdrew {amount} from {acc.Name}");
+                else
+                    Console.WriteLine($"Failed Withdrawal of {amount} from {acc.Name}");
+            }
+        }
+
+        public static void PrintDetails(List<Account> accounts)
+        {
+            Console.WriteLine("\n=== Account Info ==============================");
+            foreach (var acc in accounts)
+            {
+                Console.WriteLine($"{acc.Name} , has balance {acc.Balance}");
+            }
+        }
     }
 }
