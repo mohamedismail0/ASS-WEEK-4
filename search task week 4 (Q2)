@@ -1,0 +1,42 @@
+using System;
+using System.Linq; 
+namespace Search_task_week_4__Q2_
+{
+    class Program
+    {
+        static void CheckForVowels(string input)
+        {
+            char[] vowels = { 'a', 'e', 'i', 'o', 'u', 'A', 'E', 'I', 'O', 'U' };
+
+            if (string.IsNullOrEmpty(input))
+            {
+                throw new Exception("The input string cannot be null or empty.");
+            }
+
+            if (!input.Any(v => vowels.Contains(v)))
+            {
+                throw new Exception("The string does not contain any vowels.");
+            }
+
+            Console.WriteLine("The string contains vowels.");
+        }
+
+        static void Main()
+        {
+            try
+            {
+                Console.WriteLine("Enter a string: ");
+                string input = Console.ReadLine();
+                CheckForVowels(input);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error: " + ex.Message);
+            }
+            finally
+            {
+                Console.WriteLine("Thank you for using the vowel checker!");
+            }
+        }
+    }
+}
