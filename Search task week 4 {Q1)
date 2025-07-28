@@ -1,0 +1,65 @@
+using System;
+namespace Search_task_week_4__Q1_
+{
+
+    internal class NumberChecker
+    {
+        static void Main()
+        {
+            Console.WriteLine("Hey! Please type some numbers separated by spaces:");
+            string userInput = Console.ReadLine();
+
+            if (string.IsNullOrWhiteSpace(userInput))
+            {
+                Console.WriteLine("Oops! You didn't enter anything.");
+                return;
+            }
+
+            string[] numberStrings = userInput.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+            int[] numbers = new int[numberStrings.Length];
+
+            try
+            {
+                for (int i = 0; i < numberStrings.Length; i++)
+                {
+                    numbers[i] = int.Parse(numberStrings[i]);
+                }
+
+                bool foundDuplicate = false;
+                for (int i = 0; i < numbers.Length; i++)
+                {
+                    for (int j = i + 1; j < numbers.Length; j++)
+                    {
+                        if (numbers[i] == numbers[j])
+                        {
+                            Console.WriteLine($"Hey, the number {numbers[i]} appears more than once!");
+                            foundDuplicate = true;
+                            break;
+                        }
+                    }
+                    if (foundDuplicate) break;
+                }
+
+                if (!foundDuplicate)
+                {
+                    Console.WriteLine("Great! All your numbers are unique:");
+                    foreach (int num in numbers)
+                    {
+                        Console.Write(num + " ");
+                    }
+                }
+            }
+            catch (FormatException)
+            {
+                Console.WriteLine("Hmm... that doesn't look right. Please only enter whole numbers.");
+            }
+            catch (Exception unexpectedError)
+            {
+                Console.WriteLine($"Whoops! Something went wrong: {unexpectedError.Message}");
+            }
+
+            Console.WriteLine("\n\nPress any key to exit...");
+            Console.ReadKey();
+        }
+    }
+}
